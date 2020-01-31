@@ -8,6 +8,7 @@ typedef struct Edge{
 } edge;
 
 edge **initGraph(int n, int m); //Funcao utilizada para criar a lista de adjacencia do grafo
+edge **initRandonGraph(int n, int m);
 edge *crEdge(int x); //Funcao utilizada para criar uma aresta
 void addEdge(edge **list, int x); //Funcao utilizada para adicionar um vertice na lista de adjacencia de um vertice
 void clean (edge **list, int n); //Funcao utilizada para limpar uma lista de adjacencia apos seu uso
@@ -16,17 +17,22 @@ void printGraph(edge **graph, int n);
 
 int main(){
 
-	int n, m; //Variaveis para armazenar o numero de vertices e aestas do grafo
-	edge **graph; //Ponteiro para a lista de adjaccencias do grafo
+	int n, m, op; //Variaveis para armazenar o numero de vertices e aestas do grafo
+	edge **graph; //Ponteiro para a lista de adjacencias do grafo
 
-	scanf("%d %d", &n, &m);
-	while(!(n == 0 && m == 0)){ //Loop para cada instancia de grafo
-		graph = initGraph(n, m);
+	scanf("%d", &op);
+	while(op != 0){
+		scanf("%d %d", &n, &m);
+		if (op == 1)
+			graph = initRandonGraph(n, m);
+		else
+			graph = initGraph(n, m);
 		printf("%d\n", modifiedBFS(graph, n*m)); //Utilização da BFS com a saida do programa
 		clean(graph, n); //Limpeza das variaveis alocadas
 		free(graph);
-		scanf("%d %d", &n, &m);
+		scanf("%d", &op);
 	}
+	return 0;
 }
 
 edge **initGraph(int n, int m){
@@ -40,6 +46,35 @@ edge **initGraph(int n, int m){
 	for(i = 0; i < n*m; i++) {
 		new[i] = NULL;
 		scanf("%d", color+i);
+		if (i >= m && color[i-m] == color[i]) {
+			addEdge(&new[i], i-m); //Adiciona o vertice y na lista de adjacencia de x
+			addEdge(&new[i-m], i); //Adiciona o vertice x na lista de adjacencia de y
+		}
+		if (i % m != 0 && color[i-1] == color[i]) {
+			addEdge(&new[i], i-1); //Adiciona o vertice y na lista de adjacencia de x
+			addEdge(&new[i-1], i); //Adiciona o vertice x na lista de adjacencia de y
+		}
+	}
+	free(color);
+	return new;
+}
+
+edge **initRandonGraph(int n, int m){
+	edge **new; //Variavel para alocar a nova lista de adjacencia
+	int x, y; //Varivaeis que guardam os vertices que incidem na aresta
+	int i; //Iterador do loop para inicializar os campos da lista de adjacencia
+	int *color;
+	time_t t;
+
+	srand((unsigned) time(&t));
+	new = (edge **) malloc ((n*m) * sizeof(edge *));
+	color = (int *) malloc ((n*m) * sizeof(int));
+	for(i = 0; i < n*m; i++) {
+		new[i] = NULL;
+		color[i] = rand() % 3;
+		printf("%d ", color[i]);
+		if(i % m == m-1)
+			printf("\n");
 		if (i >= m && color[i-m] == color[i]) {
 			addEdge(&new[i], i-m); //Adiciona o vertice y na lista de adjacencia de x
 			addEdge(&new[i-m], i); //Adiciona o vertice x na lista de adjacencia de y
